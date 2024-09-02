@@ -1,6 +1,9 @@
 ifeq ($(ROOTLESS),1)
 	export THEOS_PACKAGE_SCHEME = rootless
 	export TARGET = iphone:latest:15.0
+else ifeq ($(ROOTHIDE),1)
+	export THEOS_PACKAGE_SCHEME = roothide
+	export TARGET = iphone:latest:15.0
 else ifeq ($(BUILD_LEGACY_ARM64E),1)
 	export TARGET = iphone:13.7:12.0
 else
@@ -21,8 +24,14 @@ include $(THEOS)/makefiles/common.mk
 
 XCODEPROJ_NAME = Alderis
 
+ifeq ($(ROOTHIDE),1)
+DYLIB_INSTALL_NAME_BASE = @loader_path/.jbroot/Library/Frameworks
+else
+DYLIB_INSTALL_NAME_BASE = @rpath
+endif
+
 Alderis_XCODEFLAGS = \
-	DYLIB_INSTALL_NAME_BASE=@rpath \
+	DYLIB_INSTALL_NAME_BASE=$(DYLIB_INSTALL_NAME_BASE) \
 	BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 	LOCAL_LIBRARY_DIR="$(THEOS_PACKAGE_INSTALL_PREFIX)/Library" \
 	ARCHS="$(ARCHS)"
@@ -33,19 +42,19 @@ include $(THEOS_MAKE_PATH)/xcodeproj.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
 after-Alderis-all::
-ifeq ($(ROOTLESS),1)
+ifneq ($(ROOTLESS)$(ROOTHIDE),)
 	@rm -f $(FRAMEWORK_OUTPUT_DIR)/Alderis.framework/Assets.car
 	@ldid -S $(FRAMEWORK_OUTPUT_DIR)/Alderis.framework
 endif
 
 internal-stage::
-ifneq ($(ROOTLESS),1)
+ifeq ($(ROOTLESS)$(ROOTHIDE),)
 	@mkdir -p $(THEOS_STAGING_DIR)/DEBIAN
 	@cp postinst $(THEOS_STAGING_DIR)/DEBIAN
 endif
 
 internal-package::
-ifeq ($(ROOTLESS),1)
+ifneq ($(ROOTLESS)$(ROOTHIDE),)
 	@grep -v Depends: $(THEOS_STAGING_DIR)/DEBIAN/control > tmp
 	@mv tmp $(THEOS_STAGING_DIR)/DEBIAN/control
 endif

@@ -1,0 +1,4 @@
+module Alderis {
+    header "/Users/admin/Documents/RootHide/Alderis/.build/arm64-apple-macosx/debug/Alderis.build/Alderis-Swift.h"
+    requires objc
+}

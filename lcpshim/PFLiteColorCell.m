@@ -2,6 +2,7 @@
 #import "libcolorpicker.h"
 #import "HBColorPickerTableCell+Private.h"
 #import <Preferences/PSSpecifier.h>
+#include <roothide.h>
 
 @implementation PFLiteColorCell
 
@@ -43,7 +44,7 @@
 - (UIColor *)_colorValue {
 	if (self._hbcp_defaults != nil && self._hbcp_key != nil) {
 		// libcolorpicker compatibility
-		NSString *path = [NSString stringWithFormat:@THEOS_PACKAGE_INSTALL_PREFIX @"/var/mobile/Library/Preferences/%@.plist", self._hbcp_defaults];
+		NSString *path = [NSString stringWithFormat:jbroot(@"/var/mobile/Library/Preferences/%@.plist"), self._hbcp_defaults];
 		NSDictionary *dictionary = [NSDictionary dictionaryWithContentsOfFile:path];
 		return LCPParseColorString(dictionary[self._hbcp_key], self._hbcp_default);
 	}
@@ -55,7 +56,7 @@
 	if (self._hbcp_defaults != nil && self._hbcp_key != nil) {
 		NSLog(@"Alderis: %@: Writing directly to plist file (libcolorpicker compatibility). I’m going to do it since it seems to be somewhat common, but you should be ashamed of yourself. https://hbang.github.io/Alderis/preference-bundles.html", self.class);
 
-		NSString *path = [NSString stringWithFormat:@THEOS_PACKAGE_INSTALL_PREFIX @"/var/mobile/Library/Preferences/%@.plist", self._hbcp_defaults];
+		NSString *path = [NSString stringWithFormat:jbroot(@"/var/mobile/Library/Preferences/%@.plist"), self._hbcp_defaults];
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithContentsOfFile:path] ?: [NSMutableDictionary dictionary];
 		dictionary[self._hbcp_key] = color.hbcp_propertyListValue;
 		[dictionary writeToFile:path atomically:YES];
